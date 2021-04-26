@@ -27,13 +27,9 @@ include("includes/header.php"); ?>
 		
 		if(!empty($arr)){
 			for($i=0; $i<count($arr); $i++){
-				foreach ($arr[$i] as $key=>$value){
-				echo $arr['0']." ".$value[1]." ".$value[2]." ".$value[3]."<br>";
-					//$num=$i+1
-					//echo "<div id=blok".$i."><form name= action='index.php' method='post'>".$value."<input type='submit' name='ready' value='READY'> "."<input type='submit' name='delete' value='DELETE'> <input type='text' name='status' value='".$status."'></form></div>"."<br>";
-				}
-				
-                //unset($array[$i]);				
+				//print_r($arr[$i]);
+				$str="<div id=blok".$i."><form name='task_form".$i."' action='index.php' method='post'>".$arr[$i]['0']." ".$arr[$i]['1']." ".$arr[$i]['2']." ".$arr[$i]['3']." "."<input type='text' style='display: none' name='num' value='".$arr[$i]['0']."'><input type='submit' name='ready_task' value='READY'> "."<input type='submit' name='delete' value='DELETE'> <input type='text' name='status' value='".$status."'></form></div>"."<br>";
+				echo $str;				
 			}
 		}
 	}
@@ -61,19 +57,13 @@ include("includes/header.php"); ?>
 			$status="готово";
 			if($value['status']==0){$status="не готово";}
 			$created_at=reverse_date($value['created_at']);
-			/*echo "<div id=blok".$value['id']."><form name='' action='index.php' method='post'>";
-			echo $value['id']." ".$value['description']." ".$value['created_at']." ".$status."<br>";*/
 			$res[]=array($value['id'],$value['description'],$created_at,$status);
-			/*echo "<input type='hidden'  name='num' value='".$value['id']."'>
-			<input type='submit'  name='raedy_task' value='READY'>
-			<input type='submit' name= 'del_task' value='DELETE'>
-			</fotm>.</div>";*/
 		}
 		
-	$_SESSION['array']=$res;
-	$res_arr=$_SESSION['array'];
-	print_r($res);
-	Output($res_arr);
+	//$_SESSION['array']=$res;
+	//$res_arr=$_SESSION['array'];
+	//print_r($res);
+	Output($res);
 	
 	} else {
 		echo "Произошла ошибка";
@@ -99,12 +89,12 @@ include("includes/header.php"); ?>
 		echo("<meta http-equiv='refresh' content='1'>");
 	}
 	if(isset($_POST["ready_task"])){
-		echo "hello";
-		/*$id_task=htmlspecialchars($_POST["task_num"]);
+		//echo "hello";
+		$id_task=htmlspecialchars($_POST["num"]);
 		echo $id_task;
 		$sql="UPDATE tasks SET status = 1 WHERE user_id=$user_id AND id=$id_task";
 		$result=mysqli_query($con,$sql);
-		echo("<meta http-equiv='refresh' content='1'>");*/
+		echo("<meta http-equiv='refresh' content='1'>");
 	}
 	?>
 </div>
