@@ -3,9 +3,9 @@
 	$con = mysqli_connect(DB_SERVER, DB_USER, DB_PASS, DB_NAME);
 
 /* проверка соединения */
-if (mysqli_connect_errno()) {
-    printf("Не удалось подключиться: %s\n", mysqli_connect_error());
-    exit();
+if (!$con) {
+   printf("Невозможно подключиться к базе данных. Код ошибки: %s\n", mysqli_connect_error());
+   exit;
 }
 function Connect($link,$sql,$variable){
 	if ($stmt = mysqli_prepare($link, $sgl)) {

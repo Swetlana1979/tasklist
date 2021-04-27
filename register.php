@@ -18,9 +18,14 @@ if(isset($_POST["register"])){
 		$created_at = date("Y-m-d H:i:s");
 		$sql="INSERT INTO users(login, password,created_at)VALUES('$login','$password','$created_at')";
 		$result=mysqli_query($con,$sql);
-		$sql_id="SELECT id FROM 'users' WHERE login=$login AND created_at=$created_at";
+		$login=htmlspecialchars($_POST['login']);
+		$password=htmlspecialchars($_POST['password']);
+		header("Location:register.php?login=$login&password=$password");
+		/*$sql_id="SELECT id FROM `users` WHERE login='$login' AND created_at='$created_at'";
 		$user_id=mysqli_query($con,$sql_id);
-		try_log($login, $user_id);
+		try_log($login, $user_id);*/
+		
+		
 	} else {
 			while($row=mysqli_fetch_assoc($query))
 			{
