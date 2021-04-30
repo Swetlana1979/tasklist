@@ -18,9 +18,10 @@ if(isset($_POST["register"])){
 		mysqli_stmt_bind_param($stmt, "s", $login);
 		mysqli_stmt_execute($stmt);
 		$numrows = mysqli_stmt_get_result($stmt);
+		$row=mysqli_fetch_array($numrows, MYSQLI_NUM);
 		mysqli_stmt_close($stmt);
 		
-		if($numrows==0)
+		if($row==0)
 		{
 			$created_at = date("Y-m-d H:i:s");
 			$stmt = mysqli_prepare($con, "INSERT INTO users(login, password,created_at)VALUES(?,?,?)"); 
