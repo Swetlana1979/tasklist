@@ -6,11 +6,11 @@ if(empty($_SESSION['session_login'])){
 }
 require_once("includes/connection.php");
 include("includes/header.php"); ?>
+
 <div class="container">
-	
-		<h2>Добро пожаловать, <span><?php echo $_SESSION['session_login'];?>! </span></h2>
-		<p><a href="logout.php">Выйти</a> из системы</p>
-		<h1>Task list</h2>
+	<h2>Добро пожаловать, <span><?php echo $_SESSION['session_login'];?>! </span></h2>
+	<p><a href="logout.php">Выйти</a> из системы</p>
+	<h1>Task list</h2>
 	
 	<div id='add'>
 	<form id='add_description' name='add_description' action='' method='post'>
@@ -19,8 +19,9 @@ include("includes/header.php"); ?>
 		<input type='submit' id='del' name='del' class='sub' value="REMOVE ALL">
 		<input type='submit' id='ready' name='ready' class='sub' value="READY ALL">
 	</form>
-	</div>
-	<?php
+</div>
+
+<?php
 	$name=$_SESSION['session_login'];
 	$user_id=$_SESSION['session_id'];
 		
@@ -64,29 +65,21 @@ include("includes/header.php"); ?>
 			echo"</table>";
 		}
 	}
-	
-	$sql="SELECT users.login, tasks.id, tasks.description, tasks.created_at,tasks.status FROM `users`,`tasks` 
-	WHERE users.login='".$name."'AND tasks.user_id=users.id";
-	$result=mysqli_query($con,$sql);
-	
-	/*$stmt = mysqli_prepare($con, "SELECT users.login, tasks.id, tasks.description, tasks.created_at,tasks.status FROM `users`,`tasks` 
-	WHERE tasks.user_id=users.id AND users.login=?"); 
-      if(!$stmt){
-		  mysqli_error();
-	  }
-    // связываем параметры с метками 
-		mysqli_stmt_bind_param($stmt, "s", $name);
-
-    //запускаем запрос 
+	$stmt = mysqli_prepare($con, "SELECT users.login, tasks.id, tasks.description, tasks.created_at,tasks.status FROM `users`,`tasks` 
+	WHERE tasks.user_id = users.id AND users.login= ?"); 
+	if(!$stmt){
+		'не удалось получить данные';		  
+	}
+	 mysqli_stmt_bind_param($stmt, "s", $name);
+		
+     function to_get_data($stmt){
 		mysqli_stmt_execute($stmt);
+		$result = mysqli_stmt_get_result($stmt);
+        mysqli_stmt_close($stmt);
+		return $result;
+	 }
+	 $result=to_get_data($stmt);
 
-    //получаем значения 
-    $result=mysqli_stmt_fetch($stmt);
-
-    //закрываем запрос 
-    mysqli_stmt_close($stmt);
-	
-*/
 	$res=array();
 	if($result){
 		foreach($result as $key=>$value){
@@ -96,64 +89,72 @@ include("includes/header.php"); ?>
 			}
 			$res[]=array($value['id'],$value['description'],$value['created_at'],$status);
 		}
-		
-	Output($res);
-	
+		Output($res);
 	} else {
 		echo "Произошла ошибка";
-		//mysqli_error();
 	}
+	
 	if(isset($_POST["add_desc"])){
 		if(!empty($_POST['description'])){
 			$created_at=date("Y-m-d H:i:s");
 			$description=htmlspecialchars($_POST["description"]);
-			$sql="INSERT INTO tasks(user_id, description, created_at, status)VALUES('$user_id','$description','$created_at', 0)";
-			$result=mysqli_query($con,$sql);
-			/*$stmt = mysqli_prepare($con, "INSERT INTO tasks(user_id, description, created_at, status)VALUES(?,?,?, 0)"); 
-      if(!$stmt){
-		  mysqli_error();
-	  }
-    //связываем параметры с метками 
-		mysqli_stmt_bind_param($stmt, "isd", $name);
-
-    //запускаем запрос 
-		mysqli_stmt_execute($stmt);
-
-    //получаем значения 
-    $result=mysqli_stmt_fetch($stmt);
-
-    //закрываем запрос 
-    mysqli_stmt_close($stmt);*/
+			$stmt = mysqli_prepare($con, "INSERT INTO tasks(user_id, description, created_at, status)VALUES(?,?,?, 0)"); 
+        	mysqli_stmt_bind_param($stmt, "iss", $user_id, $description, $created_at);
 		}
-		echo("<meta http-equiv='refresh' content='1'>");
+		if(mysqli_stmt_execute($stmt)){
+			echo("<meta http-equiv='refresh' content='1'>");
+		} else {
+			echo 'задание не добавленно';
+		}
+		mysqli_stmt_close($stmt);
 	}
+	
 	if(isset($_POST["del"])){
-		$sql="DELETE FROM tasks WHERE user_id=$user_id";
-		$result=mysqli_query($con,$sql);
-		echo("<meta http-equiv='refresh' content='1'>");
+		$stmt = mysqli_prepare($con,"DELETE FROM tasks WHERE user_id=?");
+		mysqli_stmt_bind_param($stmt, "i", $user_id);
+		if(mysqli_stmt_execute($stmt)){
+			echo("<meta http-equiv='refresh' content='1'>");
+		} else {
+			echo 'не удалось удалить данные';
+		}
+		mysqli_stmt_close($stmt);
 	}
 	if(isset($_POST["ready"])){
-		$sql="UPDATE tasks SET status = 1 WHERE user_id=$user_id";
-		$result=mysqli_query($con,$sql);
-		echo("<meta http-equiv='refresh' content='1'>");
+		$stmt = mysqli_prepare($con,"UPDATE tasks SET status = 1 WHERE user_id=?");
+		mysqli_stmt_bind_param($stmt, "i", $user_id);
+		if(mysqli_stmt_execute($stmt)){
+			echo("<meta http-equiv='refresh' content='1'>");
+		} else {
+			echo 'не удалось удалить данные';
+		}
+		mysqli_stmt_close($stmt);
 	}
 	if(isset($_POST["ready_task"])){
 		$id_task=htmlspecialchars($_POST["num"]);
 		$stat=htmlspecialchars($_POST["stat"]);
 		if($stat =='не готово'){
-			$sql="UPDATE tasks SET status = 1 WHERE user_id=$user_id AND id=$id_task";
+			$num=1;
 		} else{
-			$sql="UPDATE tasks SET status = 0 WHERE user_id=$user_id AND id=$id_task";
+			$num=0;
 		} 
-		
-		$result=mysqli_query($con,$sql);
-		echo("<meta http-equiv='refresh' content='1'>");
+		$stmt = mysqli_prepare($con,"UPDATE tasks SET status = ? WHERE user_id=? AND id=?");
+		mysqli_stmt_bind_param($stmt, "iii", $num,$user_id, $id_task);
+		if(mysqli_stmt_execute($stmt)){
+			echo("<meta http-equiv='refresh' content='1'>");
+		} else {
+			echo 'не удалось изменить статус';
+		}
+		mysqli_stmt_close($stmt);
 	}
+	
 	if(isset($_POST["delete_task"])){
 		$id_task=htmlspecialchars($_POST["num"]);
-		$sql="DELETE FROM tasks WHERE user_id=$user_id AND id=$id_task";
-		$result=mysqli_query($con,$sql);
-		echo("<meta http-equiv='refresh' content='1'>");
+		$stmt = mysqli_prepare($con,"DELETE FROM tasks WHERE user_id=? AND id=?");
+		mysqli_stmt_bind_param($stmt, "ii", $user_id, $id_task);
+		if(mysqli_stmt_execute($stmt)){
+			echo("<meta http-equiv='refresh' content='1'>");
+		} else {echo 'не удалось удалить данные';}
+		mysqli_stmt_close($stmt);
 	}
 	?>
 </div>

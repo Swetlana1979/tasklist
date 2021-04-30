@@ -11,27 +11,35 @@ if(isset($_POST["register"])){
 	if(!empty($_POST['login']) && !empty($_POST['password'])){
 		$login=htmlspecialchars($_POST['login']);
 		$password=htmlspecialchars($_POST['password']);
-		$query=mysqli_query($con, "SELECT * FROM users WHERE login='".$login."'");
-		$numrows=mysqli_num_rows($query);
-	if($numrows==0)
-	{
-		$created_at = date("Y-m-d H:i:s");
-		$sql="INSERT INTO users(login, password,created_at)VALUES('$login','$password','$created_at')";
-		$result=mysqli_query($con,$sql);
-		$login=htmlspecialchars($_POST['login']);
-		$password=htmlspecialchars($_POST['password']);
-		header("Location:register.php?login=$login&password=$password");
-		/*$sql_id="SELECT id FROM `users` WHERE login='$login' AND created_at='$created_at'";
-		$user_id=mysqli_query($con,$sql_id);
-		try_log($login, $user_id);*/
+		$stmt = mysqli_prepare($con, "SELECT * FROM users WHERE login=?"); 
+		if(!$stmt){
+			'не удалось получить данные';		  
+		}
+		mysqli_stmt_bind_param($stmt, "s", $login);
+		mysqli_stmt_execute($stmt);
+		$numrows = mysqli_stmt_get_result($stmt);
+		mysqli_stmt_close($stmt);
 		
+		if($numrows==0)
+		{
+			$created_at = date("Y-m-d H:i:s");
+			$stmt = mysqli_prepare($con, "INSERT INTO users(login, password,created_at)VALUES(?,?,?)"); 
+			mysqli_stmt_bind_param($stmt, "sss", $login, $password, $created_at);
 		
-	} else {
-			while($row=mysqli_fetch_assoc($query))
-			{
-				$dblogin=$row['login'];
-				$dbpassword=$row['password'];
-				$dbid=$row['id'];
+			if(mysqli_stmt_execute($stmt)){
+				$login=htmlspecialchars($_POST['login']);
+				$password=htmlspecialchars($_POST['password']);
+				header("Location:register.php?login=$login&password=$password");
+			} else {
+				echo 'ошибка авторизации';
+			}
+			mysqli_stmt_close($stmt);
+		} else {
+			foreach($numrows as $key=>$value){
+				$dblogin=$value['login'];
+				$dbpassword=$value['password'];
+				$dbid=$value['id'];
+			
 			}
 			if($login == $dblogin && $password == $dbpassword)
 			{
