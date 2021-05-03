@@ -22,17 +22,15 @@
 			$row = mysqli_fetch_array($numrows, MYSQLI_NUM);
 			mysqli_stmt_close($stmt);
 			
-		if($row == 0){
+		if($row == NULL){
+			$login = htmlspecialchars($_POST['login']);
+			$password = htmlspecialchars($_POST['password']);
+			header("Location:register.php?login=$login&password=$password");
 			$created_at = date("Y-m-d H:i:s");
 			$stmt = mysqli_prepare($con, "INSERT INTO users(login, password,created_at)VALUES(?,?,?)"); 
 			mysqli_stmt_bind_param($stmt, "sss", $login, $password, $created_at);
-			if(mysqli_stmt_execute($stmt)){
-				$login = htmlspecialchars($_POST['login']);
-				$password = htmlspecialchars($_POST['password']);
-				header("Location:register.php?login = $login&password = $password");
-			} else {
-				echo 'ошибка авторизации';
-			}
+			mysqli_stmt_execute($stmt);
+			header("Location:register.php?login = $login&password = $password");
 			mysqli_stmt_close($stmt);
 		} else {
 				foreach($numrows as $key=>$value){
